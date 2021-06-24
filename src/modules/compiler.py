@@ -139,32 +139,48 @@ class compiler:
             'char': int,
         }
         vs = words[1:]
+        var_type = words[0]
+        if not var_type == 'list':
+            self.ret['error'] = 'Type error (do not has type {})'.format(var_type)
+            return 'get_error', ()
         for var in vs:
             var = var.strip()
-            pos = self.find_quote(var)
+            msg, pos = self.find_quote(var)
+            if not msg == 'accept':
+                return 'get_error', ()
             if not len(pos['[]']) == 0:
                 self.ret['error'] = 'Sytanx error (did not expect quotes [])'
                 return 'get_error', ()
-            var_name = var[:pos['()'][0][0]]    # list V(int)(100){ranges...}
-            ele_type = words[pos['()'][0][0] : pos['()'][0][1]]
-            length = words[pos['()'][1][0] : pos['()'][1][1]]
-            if not self._is_int_(length):
-                self.ret['error'] = 'Value error (value of list length must be integer but get {})'.format(length)
+            if len(pos['{}']) == 0:
+                self.ret['error'] = 'Sytanx error (variable did not declare range)'
+                return 'get_error', ()
+            if len(pos['()']) < 2:
+                self.ret['error'] = 'Sytanx error (did not give list attribute length or element_type)'
+                return 'get_error', ()
+            var_name = var[:pos['()'][0][0]]
+            ele_type = var[pos['()'][0][0]+1 : pos['()'][0][1]]
+            length = var[pos['()'][1][0]+1 : pos['()'][1][1]]
+            if not check_type['int'](length):
+                self.ret['error'] = 'Type error (length of a list must be integer)'
                 return 'get_error', ()
             if not ele_type in self.types:
-                self.ret['error'] = 'Type error (do not have type {})'.format(ele_type)
+                self.ret['error'] = 'Type error (do not has type {})'.format(var_type)
                 return 'get_error', ()
+            length = to_type['int'](length)
+            if var_name in self.var:
+                self.ret['error'] = 'Declaration of variable {} is ambiguous'.format(var_name)
+                return 'get_error'
             rge, sit = [], 2
             for bit in range(len(pos['{}'])):
                 rge.append([])
                 while pos['{}'][bit][0] < pos['()'][sit][0] and pos['()'][sit][1] < pos['{}'][bit][1]:
-                    sub = words[pos['()'][sit][0]+1 : pos['()'][sit][1]]
+                    sub = var[pos['()'][sit][0]+1 : pos['()'][sit][1]]
                     if not check_type[ele_type](sub):
-                        self.ret['error'] = 'Value error (cannot covert {} to type {})'.format(sub, ele_type)
+                        self.ret['error'] = 'Value error (cannot covert {} to integer)'.format(sub)
                         return 'get_error', ()
-                    sub = (sub)
-                    if words[pos['()'][sit][0]-1] == '/':
-                        if len(rge) < 2:
+                    sub = to_type[ele_type](sub)
+                    if var[pos['()'][sit][0]-1] == '/':
+                        if len(rge[-1]) < 2:
                             self.ret['error'] = 'Sytanx error (has not declare variable {} range)'.format(var_name)
                             return 'get_error', ()
                         else:
@@ -172,16 +188,21 @@ class compiler:
                     else:
                         rge[-1].append(sub)
                     sit += 1
-            for i in rge:
-                i = tuple(i)
+                    if not sit < len(pos['()']):
+                        break
+            for i in range(len(rge)):
+                if len(rge[i]) < 2:
+                    self.ret['error'] = 'Sytanx error (variable {} did not has right range)'.format(var_name)
+                    return 'get_error', ()
+                rge[i] = tuple(rge[i])
             rge = tuple(rge)
             self.var[var_name] = {
                 'range': rge,  # ((first, last, exceptions...), ...)
                 'len': length,
-                'type': 'char',
+                'type': var_type,
                 'ele_type': ele_type,
             }
-            return 'accpet', ()
+        return 'accept', ()
 
     def process_sp_word(self, words) -> tuple:
         if words == ('begin', 'main'):
@@ -242,3 +263,6 @@ class compiler:
             cmd, local_var = None, None
             if words[0] in self.sp_word:
                 cmd, local_var = self.process_sp_word(words)
+
+if __name__ == '__main__':
+    pass
