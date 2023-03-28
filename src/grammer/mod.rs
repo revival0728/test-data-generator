@@ -1,5 +1,7 @@
 pub mod parser;
 pub mod variable;
+pub mod error;
+mod var_attributes;
 
 #[cfg(test)]
 mod test_variable {

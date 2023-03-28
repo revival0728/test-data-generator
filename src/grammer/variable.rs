@@ -1,5 +1,15 @@
 #![allow(dead_code)]
 
+#[derive(Clone)]
+pub enum Attribute {
+    IntRange((i64, i64)),
+    FloatRange((f64, f64)),
+    StrSet(String),
+    Tag(String),
+    Except(Box<Attribute>),
+    Any(()),
+}
+
 pub struct Variable {
     int_ranges: Vec<(i64, i64)>,
     float_ranges: Vec<(f64, f64)>,
@@ -11,6 +21,11 @@ pub struct Variable {
     float_precision: f64  // this is the "step" between generated float number, default value = 0.3f
 }
 
+pub fn make_const_variable(const_str: &str) -> Variable {
+    let mut res: Variable = Variable::new();
+    res.set_to_constant(const_str.to_string());
+    return res;
+}
 
 impl Variable {
 
