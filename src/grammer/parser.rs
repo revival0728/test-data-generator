@@ -39,13 +39,13 @@ impl Parser {
         //
         // attribute with prefix "@" means that its non-constant
         // the value in that attribute is nosense
-        let attrs: Vec<(&str, Attribute)> = vec![
+        let materials: Vec<(&str, Attribute)> = vec![
+            
             ("BEGIN", Attribute::Tag("BEGIN".to_string())),
             ("END", Attribute::Tag("END".to_string())),
             ("@IntRange", Attribute::IntRange((0, 0))),
             ("@FloatRange", Attribute::FloatRange((0_f64, 0_f64))),
             ("@StrSet", Attribute::StrSet("".to_string())),
-            ("\\@", Attribute::Except(Box::new(Attribute::Any(())))),
             ("UPC", Attribute::StrSet("ABCDEFGHIJKLMNOPQRSTUVWXYZ".to_string())),
             ("LOC", Attribute::StrSet("abcdefghijklmnopqrstuvwxyz".to_string())),
             ("SML", Attribute::StrSet("~`!@#$%^&*()_-+=\\|[]{}:;'\"/?.>,<".to_string())),
@@ -55,30 +55,58 @@ impl Parser {
             ("LSB", Attribute::StrSet("(".to_string())),
             ("RSB", Attribute::StrSet(")".to_string())),
             ("SEMI", Attribute::StrSet(";".to_string())),
+
         ];
-        for attr in attrs.iter() {
-            attributes.insert(attr.0.to_string(), attr.1.clone());
-        }
+
+        let types: Vec<(&str, Attribute)> = vec![
+
+            ("int", Attribute::Type("int".to_string())),
+            ("float", Attribute::Type("float".to_string())),
+            ("string", Attribute::Type("string".to_string())),
+            ("=", Attribute::Type("ANY".to_string())),
+
+        ];
+
+        // ( attribute, need_exception )
+        let mut insert_attrubtes = | a: &Vec<(&str, Attribute)>, ne: bool | {
+            for i in a.iter() {
+                attributes.insert(i.0.to_string(), i.1.clone());
+                if ne {
+                    let mut j: String = "\\".to_string();
+                    j.push_str(i.0);
+                    attributes.insert(j, Attribute::Except(Box::from(i.1.clone())));
+                }
+            }
+        };
+
+        insert_attrubtes(&materials, true);
+        insert_attrubtes(&types, false);
 
         return Ok(Parser { location, attributes, buffer });
     }
 
+    // code = "( ... ; ... ; ... )"
     fn parse_variable(&mut self, code: &str) -> Result<Variable, CompilerError> {
         // use += to operate location.word_id
 
         let mut result: Variable = Variable::new();
-        let mut attr_ranges: Vec<(LocType, LocType)> = Vec::new();
+        let mut attr_ranges: Vec<(LocType, LocType)> = Vec::new();  // [)
 
         {
-            let mut semi_pos: Vec<LocType> = Vec::new(); // semicolon position -> [1, ..., len())
+            let mut semi_pos: Vec<LocType> = Vec::new(); // semicolon position -> [0, ..., len())
 
-            semi_pos.push(1);
+            semi_pos.push(0);
             for (id, iter) in code.chars().enumerate() {
                 if iter == ';' {
                     semi_pos.push(id);
                 }
             }
             semi_pos.push(code.len());
+
+            if semi_pos.len() > 5 {
+                self.location.word_id += semi_pos[4];
+                return Err(CompilerError::new("too much attributes in one variable", &self.location));
+            }
 
             for (id, iter) in semi_pos.iter().enumerate() {
                 if id + 1 < semi_pos.len() {
@@ -88,6 +116,105 @@ impl Parser {
                 }
             }
         }
+
+        let mut materials: Vec<Attribute> = Vec::new();
+        let mut types: Vec<Attribute> = Vec::new();
+        let mut quantity: u64 = 1;
+        let mut end_char: String = "".to_string();
+
+        'process_materials: {
+            let m_range: (LocType, LocType) = attr_ranges[0];
+
+            if m_range.0 == m_range.1 {
+                self.location.word_id += m_range.0;
+                return Err(CompilerError::new("no materials in this variable", &self.location));
+            }
+
+            let unproc_materials: Vec<&str> = code[m_range.0 .. m_range.1].split(' ').collect();
+
+            for upm in unproc_materials.iter() {
+                let upm = String::from(*upm);
+
+                if self.attributes.contains_key(&upm) {
+                    materials.push(self.attributes.get(&upm).unwrap().clone());
+                } else {
+                    materials.push(Attribute::Uncertain(upm.clone()));
+                    // let dots_pos = match upm.find("..") {
+                    //     Some(p) => { p },
+                    //     None => { 
+                    //         self.location.word_id += code.find(&upm).unwrap();
+                    //         return Err(CompilerError::new("unknown material", &self.location)); 
+                    //     }
+                    // };
+                }
+            }
+
+            break 'process_materials;
+        }
+
+        'process_types: {
+            let m_range: (LocType, LocType) = attr_ranges[1];
+
+            if m_range.0 == m_range.1 {
+                break 'process_types;
+            }
+
+            let unproc_types: Vec<&str> = code[m_range.0 .. m_range.1].split(' ').collect();
+
+            for upt in unproc_types.iter() {
+                let upt = String::from(*upt);
+
+                if self.attributes.contains_key(&upt) {
+                    types.push(self.attributes.get(&upt).unwrap().clone());
+                } else {
+                    self.location.word_id += m_range.0;
+                    return Err(CompilerError::new("has unkown type in this variable", &self.location));
+                }
+            }
+
+            break 'process_types;
+        }
+
+        'process_quantity: {
+            let m_range: (LocType, LocType) = attr_ranges[1];
+
+            if m_range.0 == m_range.1 {
+                break 'process_quantity;
+            }
+
+            quantity = match code[m_range.0 .. m_range.1].trim().parse() {
+                Ok(v) => { v },
+                Err(_) => { 
+                    self.location.word_id += m_range.0;
+                    return Err(CompilerError::new("the argument quantity must be positive integer", &self.location)); 
+                }
+            };
+
+            break 'process_quantity;
+        }
+
+        'process_end_char: {
+            let m_range: (LocType, LocType) = attr_ranges[1];
+
+            if m_range.0 == m_range.1 {
+                break 'process_end_char;
+            }
+
+            let uncheck = code[m_range.0 .. m_range.1].trim();
+
+            if self.attributes.contains_key(uncheck) {
+                end_char = match self.attributes.get(uncheck).unwrap() {
+                    Attribute::StrSet(v) => { v.clone() },
+                    _ => { 
+                        self.location.word_id += m_range.0;
+                        return Err(CompilerError::new("end_char cannot be a sytanx character", &self.location)) 
+                    },
+                }
+            }
+
+            break 'process_end_char;
+        }
+        
 
         return Ok(result);
     }

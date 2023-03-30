@@ -1,13 +1,34 @@
 #![allow(dead_code)]
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Attribute {
     IntRange((i64, i64)),
     FloatRange((f64, f64)),
     StrSet(String),
     Tag(String),
     Except(Box<Attribute>),
+    Type(String),
+    Uncertain(String),
     Any(()),
+}
+
+impl Attribute {
+    pub fn get_type(&mut self) -> String {
+        let except_attr: String;
+
+        match self {
+
+            Attribute::IntRange(_)    => { "IntRange" },
+            Attribute::FloatRange(_)  => { "FloatRange" },
+            Attribute::StrSet(_)      => { "StrSet" },
+            Attribute::Tag(_)         => { "Tag" },
+            Attribute::Type(_)        => { "Type" },
+            Attribute::Uncertain(_)   => { "Uncertain" },
+            Attribute::Any(_)         => { "Any" },
+            Attribute::Except(in_a)   => { except_attr = format!("Except[{}]", in_a.get_type()); &except_attr }
+
+        }.to_string()
+    }
 }
 
 pub struct Variable {

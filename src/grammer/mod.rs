@@ -3,6 +3,52 @@ pub mod variable;
 pub mod error;
 
 #[cfg(test)]
+mod test_variable_attribute {
+    
+    use crate::grammer::variable::Attribute;
+
+    #[test]
+    fn value_equal() {
+        let a = Attribute::Any(());
+        let b = Attribute::StrSet("abc".to_string());
+        let c = Attribute::StrSet("cdef".to_string());
+
+        assert!(a != b);
+        assert!(b != c);
+    }
+
+    #[test]
+    fn type_equal() {
+        let mut a = Attribute::Any(());
+        let mut b = Attribute::StrSet("abc".to_string());
+        let mut c = Attribute::StrSet("cdef".to_string());
+        let mut d = Attribute::Except(Box::from(Attribute::Except(Box::from(Attribute::Any(())))));
+        let mut e = Attribute::Except(Box::from(Attribute::Except(Box::from(Attribute::Any(())))));
+        let mut f = Attribute::Except(Box::from(Box::from(Attribute::Any(()))));
+        let mut g = Attribute::IntRange((0, 1));
+        let mut h = Attribute::FloatRange((0.0, 1.1));
+        let mut i = Attribute::Tag("BEGIN".to_string());
+        let mut j = Attribute::Type("int".to_string());
+        let mut k = Attribute::Uncertain("1..10".to_string());
+
+        assert_ne!(a.get_type(), b.get_type());
+        assert_eq!(b.get_type(), c.get_type());
+        assert_eq!(d.get_type(), e.get_type());
+        assert_ne!(e.get_type(), f.get_type());
+        assert_ne!(f.get_type(), a.get_type());
+
+        assert_eq!(a.get_type(), "Any");
+        assert_eq!(b.get_type(), "StrSet");
+        assert_eq!(d.get_type(), "Except[Except[Any]]");
+        assert_eq!(g.get_type(), "IntRange");
+        assert_eq!(h.get_type(), "FloatRange");
+        assert_eq!(i.get_type(), "Tag");
+        assert_eq!(j.get_type(), "Type");
+        assert_eq!(k.get_type(), "Uncertain");
+    }
+}
+
+#[cfg(test)]
 mod test_variable {
 
     use crate::grammer::variable::Variable;
