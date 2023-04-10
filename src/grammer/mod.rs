@@ -3,6 +3,28 @@ pub mod variable;
 pub mod error;
 
 #[cfg(test)]
+mod test_parser {
+
+    use crate::grammer::parser::Parser;
+
+    #[test]
+    fn test1() {
+        let mut p = match Parser::new("./test_file/test1.tds".to_string()) {
+            Ok(r) => { r },
+            Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
+        };
+        let res = match p.parse() {
+            Ok(r) => { r },
+            Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
+        };
+
+        for i in res.iter() {
+            println!("{}", i);
+        }
+    }
+}
+
+#[cfg(test)]
 mod test_variable_attribute {
     
     use crate::grammer::variable::Attribute;

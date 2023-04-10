@@ -1,5 +1,8 @@
 #![allow(dead_code)]
 
+#[cfg(test)]
+use std::fmt;
+
 #[derive(Clone, PartialEq)]
 pub enum Attribute {
     IntRange((i64, i64)),
@@ -39,6 +42,7 @@ pub struct Variable {
     end_char: String,
     constant: bool,
     const_str: String,
+    tag: u8,  // 0 -> not a tag, 1 -> BEGIN, 2 -> END
     float_precision: f64  // this is the "step" between generated float number, default value = 0.3f
 }
 
@@ -46,6 +50,34 @@ pub fn make_const_variable(const_str: &str) -> Variable {
     let mut res: Variable = Variable::new();
     res.set_to_constant(const_str.to_string());
     return res;
+}
+
+#[cfg(test)]
+impl fmt::Display for Variable {
+
+
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fn vec_display<T>(v: &Vec<(T, T)>) -> String where T: fmt::Display {
+            let mut res: String = String::new();
+            for i in v.iter() {
+                res.push_str(&format!("({}, {}), ", i.0, i.1));
+            }
+            res.pop(); res.pop();
+            res
+        }
+
+        write!(f, "[\n\tint_ranges: ({})\n\tfloat_ranges: ({})\n\tstr_set: ({})\n\tquantity: ({})\n\tend_char: ({})\n\tconstant: ({})\n\tconst_str: ({})\n\ttag: ({})\n\tfloat_precision: ({})\n]",
+            vec_display(&self.int_ranges),
+            vec_display(&self.float_ranges),
+            self.str_set,
+            self.quantity,
+            self.end_char,
+            self.constant,
+            self.const_str,
+            self.tag,
+            self.float_precision
+        )
+    }
 }
 
 impl Variable {
@@ -59,6 +91,7 @@ impl Variable {
             end_char: String::from(""),
             constant: true,
             const_str: String::from(""),
+            tag: 0,
             float_precision: 0.001_f64
         }
     }
@@ -67,6 +100,7 @@ impl Variable {
     pub fn set_end_char(&mut self, end_char: String) { self.end_char = end_char; }
     pub fn set_to_constant(&mut self, const_str: String) { self.constant = true; self.const_str = const_str; }
     pub fn set_to_variable(&mut self) { self.constant = false; }
+    pub fn set_to_tag(&mut self, tag: u8) { self.constant = true; self.tag = tag; }
     pub fn set_float_precision(&mut self, precision: u8) { self.float_precision = 0.1_f64.powi(i32::from(precision)); }
 
     // return true if successfully jointed new element

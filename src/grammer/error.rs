@@ -31,6 +31,6 @@ impl CompilerError {
     }
 
     pub fn get_msg(&self) -> String {
-        format!("[CompilerError] {}:{}:{} => {}", self.location.file_name, self.location.line_id, self.location.word_id, self.msg)
+        format!("[CompilerError] {}:{}:{} => {}", self.location.file_name, self.location.line_id+1, self.location.word_id+1, self.msg)
     }
 }
