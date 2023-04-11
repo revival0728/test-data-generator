@@ -9,7 +9,42 @@ mod test_parser {
 
     #[test]
     fn test1() {
+        println!("Running test_parser::test1():");
         let mut p = match Parser::new("./test_file/test1.tds".to_string()) {
+            Ok(r) => { r },
+            Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
+        };
+        let res = match p.parse() {
+            Ok(r) => { r },
+            Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
+        };
+
+        for i in res.iter() {
+            println!("{}", i);
+        }
+    }
+
+    #[test]
+    fn test2() {
+        println!("Running test_parser::test2():");
+        let mut p = match Parser::new("./test_file/test2.tds".to_string()) {
+            Ok(r) => { r },
+            Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
+        };
+        let res = match p.parse() {
+            Ok(r) => { r },
+            Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
+        };
+
+        for i in res.iter() {
+            println!("{}", i);
+        }
+    }
+
+    #[test]
+    fn test3() {
+        println!("Running test_parser::test3():");
+        let mut p = match Parser::new("./test_file/test3.tds".to_string()) {
             Ok(r) => { r },
             Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
         };
