@@ -1,6 +1,7 @@
 pub mod parser;
 pub mod variable;
 pub mod error;
+pub mod td_assembly;
 
 #[cfg(test)]
 mod test_parser {

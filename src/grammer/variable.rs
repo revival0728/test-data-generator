@@ -96,6 +96,15 @@ impl Variable {
         }
     }
 
+    pub fn is_constant(&mut self) -> bool { self.constant }
+    pub fn is_tag(&mut self) -> bool { self.tag >= 1 }
+    pub fn tag(&mut self) -> u8 { self.tag }
+    pub fn int(&mut self) -> &Vec<(i64, i64)> { &self.int_ranges }
+    pub fn float(&mut self) -> (&Vec<(f64, f64)>, f64) { (&self.float_ranges, self.float_precision) }
+    pub fn stri(&mut self) -> &String { &self.str_set }
+    pub fn quantity(&mut self) -> u64 { self.quantity }
+    pub fn end_char(&mut self) -> &String { &self.end_char }
+
     pub fn set_quantity(&mut self, quantity: u64) { self.quantity = quantity; }
     pub fn set_end_char(&mut self, end_char: String) { self.end_char = end_char; }
     pub fn set_to_constant(&mut self, const_str: String) { self.constant = true; self.const_str = const_str; }
