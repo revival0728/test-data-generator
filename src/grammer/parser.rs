@@ -35,6 +35,7 @@ impl Parser {
             Err(why) => { return Err(CompilerError::new(&format!("cannot read file to compiler buffer duo to {}", why), &location)); }
         }
         buffer.pop();
+        buffer = buffer.replace("\r", "");
 
         // insert attributes into attributes
         //

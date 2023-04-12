@@ -104,6 +104,7 @@ impl Variable {
     pub fn stri(&mut self) -> &String { &self.str_set }
     pub fn quantity(&mut self) -> u64 { self.quantity }
     pub fn end_char(&mut self) -> &String { &self.end_char }
+    pub fn const_str(&mut self) -> &String { &self.const_str }
 
     pub fn set_quantity(&mut self, quantity: u64) { self.quantity = quantity; }
     pub fn set_end_char(&mut self, end_char: String) { self.end_char = end_char; }
