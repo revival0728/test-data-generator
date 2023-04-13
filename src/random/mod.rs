@@ -6,13 +6,13 @@ use rand;
 pub enum GenerResult {
     I(i64),
     F(f64),
-    S(String)
+    S(char)
 }
 
 pub struct Gener {
     i_res: Vec<i64>,
     f_res: Vec<f64>,
-    s_res: Vec<String>,
+    s_res: Vec<char>,
     i_weight: u128,
     f_weight: u128,
     s_weight: u128,
@@ -25,7 +25,7 @@ impl Gener {
     fn new(quantity: u64) -> Self {
         let i_res: Vec<i64> = Vec::new();
         let f_res: Vec<f64> = Vec::new();
-        let s_res: Vec<String> = Vec::new();
+        let s_res: Vec<char> = Vec::new();
         let i_weight: u128 = 0;
         let f_weight: u128 = 0;
         let s_weight: u128 = 0;
@@ -37,12 +37,12 @@ impl Gener {
     pub fn gen_i(&mut self, vi: &Vec<(i64, i64)>) -> Result<(), ()> {
         if self.i_res.len() != 0 { return Err(()); }
 
-        let mut weight: Vec<u64> = Vec::new();
+        let mut weight: Vec<u128> = Vec::new();
 
         for i in vi.iter() { 
-            let w: u64 = (i.1 - i.0).try_into().unwrap();
+            let w: u128 = (i.1 - i.0).try_into().unwrap();
             weight.push(w); 
-            self.i_weight += w as u128;
+            self.i_weight += w;
         }
 
         for (id, i) in vi.iter().enumerate() {
@@ -58,11 +58,48 @@ impl Gener {
         Ok(())
     }
 
-    pub fn gen_f() {
+    pub fn gen_f(&mut self, vf: &Vec<(f64, f64)>, pn: f64) -> Result<(), ()> {
+        if self.f_res.len() != 0 { return Err(()); }
+
+        let mut weight: Vec<u128> = Vec::new();
+
+        for i in vf.iter() { 
+            let w: u128 = (i.1 - i.0).round() as u128;
+            weight.push(w); 
+            self.f_weight += w;
+        }
+
+        for (id, i) in vf.iter().enumerate() {
+            let gen: UniformFloat<f64> = UniformFloat::new_inclusive(i.0, i.1);
+            let mut rng = rand::thread_rng();
+            let q: u64 = ((self.quantity as f64 * weight[id] as f64) / (self.i_weight as f64)).round() as u64;
+
+            for _ in 0..q {
+                self.f_res.push((gen.sample(&mut rng) / pn).round() * pn);
+            }
+        }
+
+        Ok(())
     }
 
-    pub fn gen_s() {
+    pub fn gen_s(&mut self, ss: &String) -> Result<(), ()>{
+        if self.s_res.len() != 0 { return Err(()); }
+
+        let gen: UniformInt<usize> = UniformInt::new(0, ss.len());
+        let mut rng = rand::thread_rng();
+        let mut chars = ss.chars();
+        self.s_weight = ss.len() as u128;
+        for _ in 0..self.quantity {
+            let id = gen.sample(&mut rng);
+
+            self.s_res.push(chars.nth(id).unwrap());
+        }
+
+        Ok(())
     }
 
-    // fn res() -> &Vec<GenerResult> {}
+    pub fn res(&mut self) -> Result<&Vec<GenerResult>, ()> {
+
+        Ok(&self.res)
+    }
 }
