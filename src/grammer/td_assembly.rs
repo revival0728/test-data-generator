@@ -8,10 +8,11 @@ pub struct AssemblySytanx {
     pub arg_count: i8  // -1 means "until close"
 }
 
-pub const ASSEMBLY_SYTNAX: [AssemblySytanx; 9] = [
+pub const ASSEMBLY_SYTNAX: [AssemblySytanx; 10] = [
     AssemblySytanx { command: "REP",  arg_count: 1  },
     AssemblySytanx { command: "CREP", arg_count: 0  },
     AssemblySytanx { command: "RD",   arg_count:-1  },
+    AssemblySytanx { command: "QU",   arg_count: 1  },
     AssemblySytanx { command: "CRD",  arg_count: 0  },
     AssemblySytanx { command: "RDI",  arg_count: 2  },
     AssemblySytanx { command: "RDF",  arg_count: 3  },

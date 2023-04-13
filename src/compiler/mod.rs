@@ -28,9 +28,10 @@ impl Compiler {
         let c_out = | s: &String | -> String { format!("OUT {}", s) };
         let c_rep = | q: u64 | -> String { format!("REP {}", q) };
         let c_crep = || -> String { format!("CREP") };
-        let c_rd = | s: &String | -> String { format!("RD {} CRD", s) };
+        let c_rd = | qu: &String, s: &String | -> String { format!("RD {} {} CRD", qu, s) };
+        let c_qu = | q: u64 | -> String { format!("QU {}", q) };
         let c_rdi = | rg: (i64, i64) | -> String { format!("RDI {} {}", rg.0, rg.1) };
-        let c_rdf = | rg: (f64, f64), p: f64 | -> String { format!("RDI {} {} {}", rg.0, rg.1, p) };
+        let c_rdf = | rg: (f64, f64), p: f64 | -> String { format!("RDF {} {} {}", rg.0, rg.1, p) };
         let c_rds = | s: &String | -> String { format!("RDS {} CRDS", s) };
         let mut add = | s: &String | { res.push_str(s); res.push('\n'); };
 
@@ -66,7 +67,7 @@ impl Compiler {
                     if !int_range.is_empty() { 
                         for i in int_range.iter() {
                             int_out.push_str(&c_rdi(*i));
-                            int_out.push('\n');
+                            int_out.push(' ');
                         }
                         int_out = int_out.trim().to_string();
                     }
@@ -78,7 +79,7 @@ impl Compiler {
                     if !float_range.is_empty() {
                         for i in float_range.iter() {
                             float_out.push_str(&c_rdf(*i, precision));
-                            float_out.push('\n');
+                            float_out.push(' ');
                         }
                         float_out = float_out.trim().to_string();
                     }
@@ -103,7 +104,7 @@ impl Compiler {
                 out.push_str(&str_out);
                 out = out.trim().to_string();
 
-                add(&c_out(&c_rd(&out)));
+                add(&c_out(&c_rd(&c_qu(token.quantity()), &out)));
             }
         }
         res.pop();
