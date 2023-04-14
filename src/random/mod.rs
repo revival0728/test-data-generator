@@ -98,8 +98,41 @@ impl Gener {
         Ok(())
     }
 
-    pub fn res(&mut self) -> Result<&Vec<GenerResult>, ()> {
+    pub fn res(&mut self) -> &Vec<GenerResult> {
+        if self.res.len() != 0 { return &self.res }
 
-        Ok(&self.res)
+        let total_weight = self.i_weight + self.f_weight + self.s_weight;
+
+        {
+            let q = (self.quantity as f64 * self.i_weight as f64 / total_weight as f64).ceil() as u128;
+
+            let gen: UniformInt<usize> = UniformInt::new(0, self.i_res.len());
+            let mut rng = rand::thread_rng();
+            for _ in 0..q {
+                self.res.push(GenerResult::I(self.i_res[gen.sample(&mut rng)]));
+            }
+        }
+
+        {
+            let q = (self.quantity as f64 * self.f_weight as f64 / total_weight as f64).ceil() as u128;
+
+            let gen: UniformInt<usize> = UniformInt::new(0, self.f_res.len());
+            let mut rng = rand::thread_rng();
+            for _ in 0..q {
+                self.res.push(GenerResult::F(self.f_res[gen.sample(&mut rng)]));
+            }
+        }
+
+        {
+            let q = (self.quantity as f64 * self.s_weight as f64 / total_weight as f64).ceil() as u128;
+
+            let gen: UniformInt<usize> = UniformInt::new(0, self.s_res.len());
+            let mut rng = rand::thread_rng();
+            for _ in 0..q {
+                self.res.push(GenerResult::S(self.s_res[gen.sample(&mut rng)]));
+            }
+        }
+        
+        &self.res
     }
 }
