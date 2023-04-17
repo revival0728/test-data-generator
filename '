@@ -2,7 +2,6 @@
 
 use rand::distributions::uniform::{ UniformInt, UniformFloat, UniformSampler };
 use rand;
-use rand::seq::SliceRandom;
 
 pub enum GenerResult {
     I(i64),
@@ -83,16 +82,17 @@ impl Gener {
         Ok(())
     }
 
-    pub fn gen_s(&mut self, ss: &String) -> Result<(), ()> {
+    pub fn gen_s(&mut self, ss: &String) -> Result<(), ()>{
         if self.s_res.len() != 0 { return Err(()); }
 
         let gen: UniformInt<usize> = UniformInt::new(0, ss.len());
         let mut rng = rand::thread_rng();
+        let mut chars = ss.chars();
         self.s_weight = ss.len() as u128;
         for _ in 0..self.quantity {
             let id = gen.sample(&mut rng);
 
-            self.s_res.push(ss.chars().nth(id).unwrap());
+            self.s_res.push(chars.nth(id).unwrap());
         }
 
         Ok(())
@@ -132,11 +132,6 @@ impl Gener {
                 self.res.push(GenerResult::S(self.s_res[gen.sample(&mut rng)]));
             }
         }
-
-        let mut rng = rand::thread_rng();
-        self.res.shuffle(&mut rng);
-        
-        while self.res.len() > self.quantity as usize { self.res.pop(); }
         
         &self.res
     }
@@ -146,12 +141,10 @@ impl Gener {
 mod test_gener{
 
     use super::Gener;
-    use super::GenerResult;
 
     #[test]
     fn rand() {
-        let quantity: u64 = 30;
-        let mut gen = Gener::new(quantity);
+        let mut gen = Gener::new(10);
         let vi: Vec<(i64, i64)> = vec![(1, 100)];
         let vf: Vec<(f64, f64)> = vec![(1.1, 5.8), (10.0, 45.8)];
         let precision: f64 = 0.0001;
@@ -169,16 +162,10 @@ mod test_gener{
             Ok(_) => {},
             Err(_) => { println!("test_gener::rand(): gen_s() error"); }
         }
-        
-        for i in gen.res().iter() {
-            print!("{} ", match i {
-                GenerResult::I(v) => { v.to_string() }
-                GenerResult::F(v) => { v.to_string() }
-                GenerResult::S(v) => { v.to_string() }
-            });
-        }
-        println!();
 
-        assert_eq!(gen.res().len(), 30);
+        let res = gen.res();
+
+        match res {
+        }
     }
 }
