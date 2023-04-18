@@ -23,7 +23,7 @@ pub struct Gener {
 
 impl Gener {
 
-    fn new(quantity: u64) -> Self {
+    pub fn new(quantity: u64) -> Self {
         let i_res: Vec<i64> = Vec::new();
         let f_res: Vec<f64> = Vec::new();
         let s_res: Vec<char> = Vec::new();

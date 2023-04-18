@@ -28,8 +28,9 @@ impl Compiler {
         let c_out = | s: &String | -> String { format!("OUT {}", s) };
         let c_rep = | q: u64 | -> String { format!("REP {}", q) };
         let c_crep = || -> String { format!("CREP") };
-        let c_rd = | qu: &String, s: &String | -> String { format!("RD {} {} CRD", qu, s) };
+        let c_rd = | qu: &String, ec: &String, s: &String | -> String { format!("RD {} {} {} CRD", qu, ec, s) };
         let c_qu = | q: u64 | -> String { format!("QU {}", q) };
+        let c_ec = | e: &String | -> String { format!("EC {}", e) };
         let c_rdi = | rg: (i64, i64) | -> String { format!("RDI {} {}", rg.0, rg.1) };
         let c_rdf = | rg: (f64, f64), p: f64 | -> String { format!("RDF {} {} {}", rg.0, rg.1, p) };
         let c_rds = | s: &String | -> String { format!("RDS {} CRDS", s) };
@@ -104,7 +105,7 @@ impl Compiler {
                 out.push_str(&str_out);
                 out = out.trim().to_string();
 
-                add(&c_out(&c_rd(&c_qu(token.quantity()), &out)));
+                add(&c_out(&c_rd(&c_qu(token.quantity()), &c_ec(token.end_char()), &out)));
             }
         }
         res.pop();
