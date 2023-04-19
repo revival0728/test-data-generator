@@ -45,17 +45,18 @@ impl BufferReader {
         Ok(BufferReader { buffer, buf_pointer })
     }
 
-    pub fn read_cmd(&mut self) -> Result<&str, RuntimeError> {
+    pub fn read_token(&mut self) -> Result<&str, RuntimeError> {
         if self.buffer.len() <= self.buf_pointer {
             return Err(RuntimeError::new("Internal RuntimeError: buffer out of empty before virtual machine closes. may cause by self.move_reader()"));
         }
 
+        let res = &self.buffer[self.buf_pointer];
         self.buf_pointer += 1;
 
-        Ok(&self.buffer[self.buf_pointer])
+        Ok(res)
     }
 
-    pub fn read_token(&mut self) -> Result<&str, RuntimeError> { self.read_cmd() }
+    pub fn read_cmd(&mut self) -> Result<&str, RuntimeError> { self.read_token() }
 
     pub fn read_arg<T>(&mut self) -> Result<T, RuntimeError> where T: FromStr {
         let res: T = match self.read_cmd()?.parse() {
@@ -68,4 +69,15 @@ impl BufferReader {
 
     pub fn get_reader_index(&self) -> usize { self.buf_pointer }
     pub fn move_reader(&mut self, position: usize) { self.buf_pointer = position }
+    
+    #[cfg(test)]
+    pub fn read_to_end(&mut self) -> Result<Vec<String>, RuntimeError> {
+        let mut res: Vec<String> = Vec::new();
+
+        while self.buf_pointer < self.buffer.len() {
+            res.push(self.read_token()?.to_string());
+        }
+
+        Ok(res)
+    }
 }

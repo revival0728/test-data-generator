@@ -30,7 +30,7 @@ impl Compiler {
         let c_crep = || -> String { format!("CREP") };
         let c_rd = | qu: &String, ec: &String, s: &String | -> String { format!("RD {} {} {} CRD", qu, ec, s) };
         let c_qu = | q: u64 | -> String { format!("QU {}", q) };
-        let c_ec = | e: &String | -> String { format!("EC {}", e) };
+        let c_ec = | e: &String | -> String { format!("EC {}", e.replace(" ", "SPACE")) };
         let c_rdi = | rg: (i64, i64) | -> String { format!("RDI {} {}", rg.0, rg.1) };
         let c_rdf = | rg: (f64, f64), p: f64 | -> String { format!("RDF {} {} {}", rg.0, rg.1, p) };
         let c_rds = | s: &String | -> String { format!("RDS {} CRDS", s) };

@@ -1,7 +1,3 @@
-// TODO
-// 1. process repeat_stack in CREP or other cmd
-// 2. cmd RD is not finished
-
 #![allow(dead_code)]
 
 use std::collections::HashMap;
@@ -13,7 +9,7 @@ use crate::random::GenerResult;
 use crate::grammer::td_assembly;
 use crate::grammer::td_assembly::AssemblySytanx;
 
-struct VirtualMachine {
+pub struct VirtualMachine {
     buffer_reader: BufferReader,
     repeat_stack: Vec<(usize, u64)>,  // [(starting command buf_reader index, repeat count)]
     stdout: String,
@@ -33,16 +29,39 @@ impl VirtualMachine {
 
     fn cmd_rep(&mut self) -> Result<(), RuntimeError> {
         let times: u64 = self.buffer_reader.read_arg()?;
-        self.repeat_stack.push((self.buffer_reader.get_reader_index() - 1, times));
+        self.repeat_stack.push((self.buffer_reader.get_reader_index(), times));
 
-        let next_cmd = self.buffer_reader.read_cmd()?;
-        if !next_cmd.eq("OUT") {
-            return Err(RuntimeError::new("all the generated data must be exported to designated file"));
+        loop {
+            let next_cmd = self.buffer_reader.read_cmd()?;
+            let mut continue_loop: bool = true;
+
+            match next_cmd {
+                "REP" => { self.cmd_rep()? }
+                "OUT" => { self.cmd_out()? }
+                "CREP" => { continue_loop = self.cmd_crep()?; }
+                _ => { return Err(RuntimeError::new("all the generated data must be exported to designated file")); }
+            }
+
+            if !continue_loop { break; }
         }
-
-        self.cmd_out()?;
         
         Ok(())
+    }
+
+    // return true if the REPEAT continue else return false
+    fn cmd_crep(&mut self) -> Result<bool, RuntimeError> {
+        let mut rep_status: &mut (usize, u64) = &mut match self.repeat_stack.last_mut() {
+            Some(&mut v) => { v }
+            None => { return Err(RuntimeError::new("unpaired cmd CREP")); }
+        };
+        rep_status.1 -= 1;
+        if rep_status.0 == 0 {
+            self.repeat_stack.pop();
+
+            return Ok(false);
+        }
+
+        Ok(true)
     }
 
     fn cmd_out(&mut self) -> Result<(), RuntimeError> {
@@ -62,6 +81,7 @@ impl VirtualMachine {
         Ok(())
     }
 
+    // cmd_crd, cmd_ec, cmd_qu is involved in this function
     fn cmd_rd(&mut self) -> Result<String, RuntimeError> {
         let mut res = String::new();
         let quantity: u64;
@@ -116,6 +136,11 @@ impl VirtualMachine {
         }
 
         for i in 0..quantity {
+            res.push_str(&match gener.res()[i as usize] {
+                GenerResult::I(v) => { v.to_string() }
+                GenerResult::F(v) => { v.to_string() }
+                GenerResult::S(v) => { v.to_string() }
+            });
 
             if i != quantity - 1 {
                 res.push_str(&end_char);
@@ -140,6 +165,7 @@ impl VirtualMachine {
         Ok(((l, r), p))
     }
 
+    // cmd_crds is involved in this function
     fn cmd_rds(&mut self) -> Result<String, RuntimeError> {
         let mut res = String::new();
 
@@ -164,12 +190,12 @@ impl VirtualMachine {
     }
 
     fn cmd_ec(&mut self) -> Result<String, RuntimeError> {
-        let end_char = self.buffer_reader.read_token()?.to_string();
+        let end_char = self.buffer_reader.read_token()?.replace("SPACE", " ").to_string();
 
         Ok(end_char)
     }
 
-    pub fn main(&mut self) -> Result<(), RuntimeError> {
+    fn main_thread(&mut self) -> Result<(), RuntimeError> {
         let cmd = self.buffer_reader.read_cmd()?;
 
         if !cmd.eq("REP") {
@@ -180,4 +206,7 @@ impl VirtualMachine {
 
         Ok(())
     }
+
+    pub fn exec(&mut self) -> Result<(), RuntimeError> { self.main_thread() }
+    pub const fn stdout(&self) -> &String { &self.stdout }
 }

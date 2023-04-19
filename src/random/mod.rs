@@ -38,6 +38,7 @@ impl Gener {
     pub fn gen_i(&mut self, vi: &Vec<(i64, i64)>) -> Result<(), ()> {
         if self.i_res.len() != 0 { return Err(()); }
 
+        if vi.len() == 0 { return Ok(()); }
         let mut weight: Vec<u128> = Vec::new();
 
         for i in vi.iter() { 
@@ -62,6 +63,7 @@ impl Gener {
     pub fn gen_f(&mut self, vf: &Vec<(f64, f64)>, pn: f64) -> Result<(), ()> {
         if self.f_res.len() != 0 { return Err(()); }
 
+        if vf.len() == 0 { return Ok(()); }
         let mut weight: Vec<u128> = Vec::new();
 
         for i in vf.iter() { 
@@ -86,6 +88,7 @@ impl Gener {
     pub fn gen_s(&mut self, ss: &String) -> Result<(), ()> {
         if self.s_res.len() != 0 { return Err(()); }
 
+        if ss.len() == 0 { return Ok(()); }
         let gen: UniformInt<usize> = UniformInt::new(0, ss.len());
         let mut rng = rand::thread_rng();
         self.s_weight = ss.len() as u128;
@@ -103,7 +106,7 @@ impl Gener {
 
         let total_weight = self.i_weight + self.f_weight + self.s_weight;
 
-        {
+        if self.i_res.len() > 0 {
             let q = (self.quantity as f64 * self.i_weight as f64 / total_weight as f64).ceil() as u128;
 
             let gen: UniformInt<usize> = UniformInt::new(0, self.i_res.len());
@@ -113,7 +116,7 @@ impl Gener {
             }
         }
 
-        {
+        if self.f_res.len() > 0 {
             let q = (self.quantity as f64 * self.f_weight as f64 / total_weight as f64).ceil() as u128;
 
             let gen: UniformInt<usize> = UniformInt::new(0, self.f_res.len());
@@ -123,7 +126,7 @@ impl Gener {
             }
         }
 
-        {
+        if self.s_res.len() > 0 {
             let q = (self.quantity as f64 * self.s_weight as f64 / total_weight as f64).ceil() as u128;
 
             let gen: UniformInt<usize> = UniformInt::new(0, self.s_res.len());
