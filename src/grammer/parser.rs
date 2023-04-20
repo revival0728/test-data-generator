@@ -34,7 +34,6 @@ impl Parser {
             Ok(_) => {},
             Err(why) => { return Err(CompilerError::new(&format!("cannot read file to compiler buffer duo to {}", why), &location)); }
         }
-        buffer.pop();
         buffer = buffer.replace("\r", "");
 
         // insert attributes into attributes
@@ -185,20 +184,8 @@ impl Parser {
 
             let unproc_types: Vec<&str> = code[m_range.0 .. m_range.1].trim().split(' ').collect();
 
-            // #[cfg(test)]
-            // {
-            //     for (id, i) in unproc_types.iter().enumerate() {
-            //         println!("In parse_variable(): unproc_types[{}] = [{}]", id, i)
-            //     }
-            // }
-
             for upt in unproc_types.iter() {
                 let upt = String::from(*upt);
-
-                // #[cfg(test)]
-                // {
-                //     println!("In parse_variable(): upt = [{}]", upt)
-                // }
 
                 if self.attributes.contains_key(&upt) {
                     types.push(self.attributes.get(&upt).unwrap().clone());
@@ -220,13 +207,6 @@ impl Parser {
             if m_range.0 == m_range.1 {
                 break 'process_quantity;
             }
-
-            // #[cfg(test)]
-            // {
-            //     println!("In parse_variable(): code = [{}]", code);
-            //     println!("In parse_variable(): m_range = ({}, {})", m_range.0, m_range.1);
-            //     println!("In parse_variable(): code[m_range] = [{}]", &code[m_range.0 .. m_range.1]);
-            // }
 
             quantity = match code[m_range.0 .. m_range.1].trim().parse() {
                 Ok(v) => { v },
@@ -269,22 +249,6 @@ impl Parser {
         result.set_to_variable();
 
         if materials.len() != types.len() {
-            // #[cfg(test)]
-            // {
-            //     println!("In parse_variable(): materials.len() = [{}]", materials.len());
-            //     println!("In parse_variable(): types.len() = [{}]", types.len());
-            //     if materials.len() >= 2 { println!("In parse_variable(): materials[1] = [{}]", match &materials[1] {
-            //         Attribute::Tag(t) => { t.clone() },
-            //         Attribute::Uncertain(v) => { v.clone() },
-            //         _ => { "X".to_string() }
-            //     })}
-            //     println!("In parse_variable(): materials[0] = {}", match &materials[0] {
-            //         Attribute::Tag(t) => { t.clone() },
-            //         Attribute::Uncertain(v) => { v.clone() },
-            //         _ => { "X".to_string() }
-            //     });
-            //     println!("In parse_variable(): materials[0].type = [{}]", materials[0].get_type());
-            // }
             if materials.len() == 1 && (materials[0] == Attribute::Tag("BEGIN".to_string()) || materials[0] == Attribute::Tag("END".to_string()))  {
                 result.set_to_tag(if materials[0] == Attribute::Tag("BEGIN".to_string()) { 1 } else { 2 });
                 return Ok(result);
@@ -378,6 +342,8 @@ impl Parser {
                     };
                     if types[i] == Attribute::Type("ANY".to_string()) {
                         if dot_pos != -1 && col_pos != -1 {
+                            // float
+
                             let float_range = match parse_float(s) {
                                 Ok(r) => { r },
                                 Err(e) => { return Err(e); }
@@ -388,6 +354,7 @@ impl Parser {
                             if is_join { result.join_float_range(float_range.0) }
                             else { result.del_float_range(float_range.0) }
                         } else if dot_pos != -1 {
+                            // int 
                             let int_range = match parse_int(s) {
                                 Ok(r) => { r },
                                 Err(e) => { return Err(e); }
@@ -438,7 +405,10 @@ impl Parser {
                 _ => { return Err(CompilerError::new("Internal CompilerError", &self.location)); },
             };
         }
-        
+        if float_precision != -1 {
+            result.set_float_precision(float_precision as u8);
+        }
+
         return Ok(result);
     }
 
@@ -470,13 +440,6 @@ impl Parser {
             return Ok(result);
         }
 
-        // #[cfg(test)]
-        // {
-        //     println!("In parse_line(): code = [{}]", code);
-        //     for (id, i) in var_bracket_pairs.iter().enumerate() {
-        //         println!("In parse_line(): var_bracket_pairs[{}] = ({}, {})", id, i.0, i.1);
-        //     }
-        // }
         for (id, iter) in var_bracket_pairs.iter().enumerate() {
             if id == 0 && 0 < iter.0 {
                 result.push(make_const_variable(&code[0..iter.0]));

@@ -9,7 +9,7 @@ mod test_parser {
     use crate::grammer::parser::Parser;
 
     #[test]
-    fn test1() {
+    fn parse_1() {
         let mut p = match Parser::new("./test_file/test1.tds".to_string()) {
             Ok(r) => { r },
             Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
@@ -21,25 +21,25 @@ mod test_parser {
     }
 
     #[test]
-    fn test2() {
+    fn parse_2() {
         let mut p = match Parser::new("./test_file/test2.tds".to_string()) {
             Ok(r) => { r },
             Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
         };
         match p.parse() {
-            Ok(r) => { r },
+            Ok(r) => { for i in r.iter() { println!("{}", i); } },
             Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
         };
     }
 
     #[test]
-    fn test3() {
+    fn parse_3() {
         let mut p = match Parser::new("./test_file/test3.tds".to_string()) {
             Ok(r) => { r },
             Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
         };
         match p.parse() {
-            Ok(r) => { r },
+            Ok(r) => { for i in r.iter() { println!("{}", i); } },
             Err(e) => { println!("{}", e.get_msg()); assert!(false); return; },
         };
     }

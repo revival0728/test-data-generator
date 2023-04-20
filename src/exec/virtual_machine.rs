@@ -35,14 +35,6 @@ impl VirtualMachine {
             let next_cmd = self.buffer_reader.read_cmd()?;
             let mut continue_loop: bool = true;
 
-            // #[cfg(test)]
-            // {
-            //     let rep_status: &mut (usize, u64) = &mut match self.repeat_stack.last_mut() {
-            //         Some(&mut v) => { v }
-            //         None => { return Err(RuntimeError::new("unpaired cmd CREP")); }
-            //     };
-            //     println!("rep_status.1 = [{}]", rep_status.1);
-            // }
             match next_cmd {
                 "REP" => { self.cmd_rep()? }
                 "OUT" => { self.cmd_out()? }
@@ -73,10 +65,6 @@ impl VirtualMachine {
     fn cmd_out(&mut self) -> Result<(), RuntimeError> {
         let next_token = self.buffer_reader.read_token()?;
         
-        // #[cfg(test)]
-        // {
-        //     println!("{}", next_token);
-        // }
         if self.asm_table.contains_key(next_token) {
             if !next_token.eq("RD") {
                 return Err(RuntimeError::new("Internal RuntimeError: In cmd_out()"));
@@ -95,7 +83,6 @@ impl VirtualMachine {
     fn cmd_rd(&mut self) -> Result<String, RuntimeError> {
         let mut res = String::new();
         let quantity: u64;
-        let end_char: String;
         
         {
             let sub_cmd = self.buffer_reader.read_cmd()?;
@@ -105,14 +92,7 @@ impl VirtualMachine {
             quantity = self.cmd_qu()?;
         }
 
-        {
-            let sub_cmd = self.buffer_reader.read_cmd()?;
-            if !sub_cmd.eq("EC") {
-                return Err(RuntimeError::new("Internal RuntimeError: didn't find EC cmd after RD cmd"));
-            }
-            end_char = self.cmd_ec()?;
-        }
-
+        let mut end_char: String = String::new();
         let mut gener = Gener::new(quantity);
         let mut vi: Vec<(i64, i64)> = Vec::new();
         let mut vf: Vec<(f64, f64)> = Vec::new();
@@ -120,10 +100,6 @@ impl VirtualMachine {
         let mut ss: String = String::new();
 
         loop {
-            // #[cfg(test)]
-            // {
-            //     println!("In cmd_rd(): loop")
-            // }
             let sub_cmd = self.buffer_reader.read_cmd()?;
 
             if sub_cmd.eq("CRD") {
@@ -134,30 +110,19 @@ impl VirtualMachine {
                 "RDI" => { vi.push(self.cmd_rdi()?) }
                 "RDF" => { let r = self.cmd_rdf()?; vf.push(r.0); precision = r.1; }
                 "RDS" => { ss.push_str(&self.cmd_rds()?) }
-                _ => { return Err(RuntimeError::new(&format!("Internal RuntimeError: unexpected cmd {}", sub_cmd))); }
+                "EC" => { end_char = self.cmd_ec()?; }
+                _ => { return Err(RuntimeError::new(&format!("Internal RuntimeError: unexpected cmd [{}]", sub_cmd))); }
             }
         }
-        // #[cfg(test)]
-        // {
-        //     println!("Out cmd_rd(): loop")
-        // }
 
-        // #[cfg(test)]
-        // {
-        //     println!("In cmd_rd(): gener.gen_*")
-        // }
         gener.gen_f(&vf, precision)?;
         gener.gen_i(&vi)?;
         gener.gen_s(&ss)?;
-        // #[cfg(test)]
-        // {
-        //     println!("Out cmd_rd(): gener.gen_*")
-        // }
 
         for i in 0..quantity {
             res.push_str(&match gener.res()[i as usize] {
                 GenerResult::I(v) => { v.to_string() }
-                GenerResult::F(v) => { v.to_string() }
+                GenerResult::F(v) => { format!("{:.*}", -precision.log10().floor() as usize, v) }
                 GenerResult::S(v) => { v.to_string() }
             });
 
@@ -189,11 +154,6 @@ impl VirtualMachine {
         let mut res = String::new();
 
         loop {
-            
-            // #[cfg(test)]
-            // {
-            //     println!("In cmd_res(): loop");
-            // }
             let token = self.buffer_reader.read_token()?;
 
 
@@ -214,7 +174,10 @@ impl VirtualMachine {
     }
 
     fn cmd_ec(&mut self) -> Result<String, RuntimeError> {
-        let end_char = self.buffer_reader.read_token()?.replace("SPACE", " ").to_string();
+        let end_char = self.buffer_reader.read_token()?
+        .replace("SPACE", " ")
+        .replace("$NONE", "")
+        .to_string();
 
         Ok(end_char)
     }

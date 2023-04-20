@@ -1,5 +1,3 @@
-(BEGIN;; 1)
-(ALC \abcdefg ; = string ; 8 ; *)
+(BEGIN;; 1)(ALC \abcdefg ; = string ; 8 ; *)
 (1..100 \25..75 ; = int ; 11; SPACE)
-(1..100:.4f \25..75:.4f ; = float ; 15; SPACE)
-(END)
+(1..100:.4f \25..75:.4f ; = float ; 15; SPACE)(END)
