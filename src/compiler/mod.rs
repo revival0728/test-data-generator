@@ -6,7 +6,7 @@ use crate::grammer::error::CompilerError;
 use crate::grammer::td_assembly;
 use std::collections::HashMap;
 
-struct Compiler {
+pub struct Compiler {
     asm_sytanx_table: HashMap<String, td_assembly::AssemblySytanx>
 }
 
