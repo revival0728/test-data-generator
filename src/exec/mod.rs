@@ -1,6 +1,6 @@
 pub mod virtual_machine;
+pub mod error;
 mod buffer_reader;
-mod error;
 
 #[cfg(test)]
 mod test_buffer_reader {
@@ -32,7 +32,36 @@ mod test_virtual_machine {
 
     use super::virtual_machine::VirtualMachine;
 
-    // FIXME cannot reach to the end of the program
+    // #[test]
+    // fn run_1() {
+    //     let mut vm = match VirtualMachine::new("./test_file/test1.tdc".to_string()) {
+    //         Ok(v) => { v }
+    //         Err(_) => { panic!("VirtualMachine::new()") }
+    //     };
+    //
+    //     match vm.exec() {
+    //         Ok(_) => {}
+    //         Err(_) => { panic!("VirtualMachine::exec()") }
+    //     };
+    //
+    //     println!("vm.stdout() = [{}]", vm.stdout());
+    // }
+    //
+    // #[test]
+    // fn run_2() {
+    //     let mut vm = match VirtualMachine::new("./test_file/test2.tdc".to_string()) {
+    //         Ok(v) => { v }
+    //         Err(_) => { panic!("VirtualMachine::new()") }
+    //     };
+    //
+    //     match vm.exec() {
+    //         Ok(_) => {}
+    //         Err(_) => { panic!("VirtualMachine::exec()") }
+    //     };
+    //
+    //     println!("vm.stdout() = [{}]", vm.stdout());
+    // }
+
     #[test]
     fn run_3() {
         let mut vm = match VirtualMachine::new("./test_file/test3.tdc".to_string()) {

@@ -35,6 +35,14 @@ impl VirtualMachine {
             let next_cmd = self.buffer_reader.read_cmd()?;
             let mut continue_loop: bool = true;
 
+            // #[cfg(test)]
+            // {
+            //     let rep_status: &mut (usize, u64) = &mut match self.repeat_stack.last_mut() {
+            //         Some(&mut v) => { v }
+            //         None => { return Err(RuntimeError::new("unpaired cmd CREP")); }
+            //     };
+            //     println!("rep_status.1 = [{}]", rep_status.1);
+            // }
             match next_cmd {
                 "REP" => { self.cmd_rep()? }
                 "OUT" => { self.cmd_out()? }
@@ -50,23 +58,25 @@ impl VirtualMachine {
 
     // return true if the REPEAT continue else return false
     fn cmd_crep(&mut self) -> Result<bool, RuntimeError> {
-        let mut rep_status: &mut (usize, u64) = &mut match self.repeat_stack.last_mut() {
-            Some(&mut v) => { v }
-            None => { return Err(RuntimeError::new("unpaired cmd CREP")); }
-        };
-        rep_status.1 -= 1;
-        if rep_status.0 == 0 {
-            self.repeat_stack.pop();
+        let finish_repeat: bool;
+        if let Some(rep_status) = self.repeat_stack.last_mut() {
+            rep_status.1 -= 1;
+            finish_repeat = rep_status.1 == 0;
+            self.buffer_reader.move_reader(rep_status.0);
+        } else { return Err(RuntimeError::new("Internal RuntimeError: repeat_stack was empty before program finished")); }
 
-            return Ok(false);
-        }
+        if finish_repeat { self.repeat_stack.pop(); }
 
-        Ok(true)
+        Ok(!finish_repeat)
     }
 
     fn cmd_out(&mut self) -> Result<(), RuntimeError> {
         let next_token = self.buffer_reader.read_token()?;
         
+        // #[cfg(test)]
+        // {
+        //     println!("{}", next_token);
+        // }
         if self.asm_table.contains_key(next_token) {
             if !next_token.eq("RD") {
                 return Err(RuntimeError::new("Internal RuntimeError: In cmd_out()"));
@@ -110,6 +120,10 @@ impl VirtualMachine {
         let mut ss: String = String::new();
 
         loop {
+            // #[cfg(test)]
+            // {
+            //     println!("In cmd_rd(): loop")
+            // }
             let sub_cmd = self.buffer_reader.read_cmd()?;
 
             if sub_cmd.eq("CRD") {
@@ -123,17 +137,22 @@ impl VirtualMachine {
                 _ => { return Err(RuntimeError::new(&format!("Internal RuntimeError: unexpected cmd {}", sub_cmd))); }
             }
         }
+        // #[cfg(test)]
+        // {
+        //     println!("Out cmd_rd(): loop")
+        // }
 
-        match || -> Result<(), ()> {
-            gener.gen_i(&vi)?;
-            gener.gen_f(&vf, precision)?;
-            gener.gen_s(&ss)?;
-
-            Ok(())
-        }() {
-            Ok(_) => {}
-            Err(_) => { return Err(RuntimeError::new("Internal RuntimeError: occured when generating datas")); }
-        }
+        // #[cfg(test)]
+        // {
+        //     println!("In cmd_rd(): gener.gen_*")
+        // }
+        gener.gen_f(&vf, precision)?;
+        gener.gen_i(&vi)?;
+        gener.gen_s(&ss)?;
+        // #[cfg(test)]
+        // {
+        //     println!("Out cmd_rd(): gener.gen_*")
+        // }
 
         for i in 0..quantity {
             res.push_str(&match gener.res()[i as usize] {
@@ -170,6 +189,11 @@ impl VirtualMachine {
         let mut res = String::new();
 
         loop {
+            
+            // #[cfg(test)]
+            // {
+            //     println!("In cmd_res(): loop");
+            // }
             let token = self.buffer_reader.read_token()?;
 
 
