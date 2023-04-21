@@ -16,8 +16,8 @@ mod helper_func {
     pub fn print_msg(msg: &str) { println!("tdg: {}", msg) }
 
     // return true if success else return false
-    pub fn write_file(file_name: &str, text: &str) -> bool {
-        let path = Path::new(file_name);
+    pub fn write_file(file_name: &str, text: &str, dir: &str) -> bool {
+        let path = Path::new(dir).join(file_name);
         let path_display = path.display();
         let mut file = if path.exists() { 
             match OpenOptions::new().truncate(true).write(true).open(&path) {
@@ -49,7 +49,7 @@ mod helper_func {
     }
 }
 
-const CONFIG_ARGS_COUNT: usize = 6;
+const CONFIG_ARGS_COUNT: usize = 7;
 
 // [(config name, argument count)]
 const CONFIG_ARGS: [(&'static str, u8); CONFIG_ARGS_COUNT] = [
@@ -59,7 +59,8 @@ const CONFIG_ARGS: [(&'static str, u8); CONFIG_ARGS_COUNT] = [
     ("--filename-format", 1),  // file name format e.g. FN_** 
                                // (** means the id of the test data, 0 base, N starts means N decimals)
     ("--create-answer", 1),  // run a program with all the generated datas and output result as .out file
-    ("--id-base", 1)  // the starting number of the ID
+    ("--id-base", 1),  // the starting number of the ID
+    ("--output-dir", 1)  // designate output directory
 ];
 
 fn proc_args(args: &Vec<String>) -> [Vec<&str>; CONFIG_ARGS_COUNT] {
@@ -97,12 +98,12 @@ fn compile(file_name: &str) -> i32 {
         }
     };
 
-    helper_func::write_file(&file_name.replace(".tds", ".tdc"), &res);
+    helper_func::write_file(&file_name.replace(".tds", ".tdc"), &res, "");
 
     return 0;
 }
 
-fn execute(file_name: &str, gen_file_count: &str, output_format: &str, ans_exec_cmd: &str, id_base: &str) -> i32 {
+fn execute(file_name: &str, gen_file_count: &str, output_format: &str, ans_exec_cmd: &str, id_base: &str, output_dir: &str) -> i32 {
     let gen_file_count: u8 = if gen_file_count.len() != 0 { match gen_file_count.parse() {
         Ok(r) => { r }
         Err(_) => {
@@ -117,6 +118,7 @@ fn execute(file_name: &str, gen_file_count: &str, output_format: &str, ans_exec_
             return 2;
         }
     }} else { 0 };
+    let output_dir = if output_dir.len() != 0 { output_dir } else { "." };
     let star_count = | s: &str | -> (u8, String) {
         let mut res: (u8, String) = (0, "".to_string());
         for c in s.chars() {
@@ -176,7 +178,7 @@ fn execute(file_name: &str, gen_file_count: &str, output_format: &str, ans_exec_
         // generate datas
         {
             let output_fn = format!("{}.in", fn_template);
-            helper_func::write_file(&output_fn, vm.stdout());
+            helper_func::write_file(&output_fn, vm.stdout(), "");
         }
 
         if ans_exec_cmd.len() != 0 {
@@ -194,7 +196,7 @@ fn execute(file_name: &str, gen_file_count: &str, output_format: &str, ans_exec_
 
             let output_fn = format!("{}.out", fn_template);
 
-            helper_func::write_file(&output_fn, &ans_text);
+            helper_func::write_file(&output_fn, &ans_text, &output_dir);
         }
     }
 
@@ -216,7 +218,7 @@ fn cli() -> i32 {
         return 1;
     }
 
-    return if config[0][0].len() != 0 { compile(config[0][0]) } else { execute(config[1][0], config[2][0], config[3][0], config[4][0], config[5][0]) }
+    return if config[0][0].len() != 0 { compile(config[0][0]) } else { execute(config[1][0], config[2][0], config[3][0], config[4][0], config[5][0], config[6][0]) }
 }
 
 fn main() {
