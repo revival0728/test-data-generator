@@ -44,7 +44,7 @@ jobs:
     - name: Run testfile#5
       run: cargo run -- -c "./test_file/github-only/test5.tds" && cargo run -- -e "./test_file/github-only/test5.tdc"
     - name: Run testfile#6
-      run: cargo run -- -c "./test_file/github-only/test5.tds" && cargo run -- -e "./test_file/github-only/test5.tdc" --create-answer "./test_file/github-only/test6.py"
+      run: cargo run -- -c "./test_file/github-only/test6.tds" && cargo run -- -e "./test_file/github-only/test6.tdc" --create-answer "python ./test_file/github-only/test6.py"
 
 
   windows-run-cli-test:
@@ -69,4 +69,4 @@ jobs:
     - name: Run testfile#5
       run: cargo run -- -c "./test_file/github-only/test5.tds" && cargo run -- -e "./test_file/github-only/test5.tdc"
     - name: Run testfile#6
-      run: cargo run -- -c "./test_file/github-only/test5.tds" && cargo run -- -e "./test_file/github-only/test5.tdc" --create-answer "./test_file/github-only/test6.py"
+      run: cargo run -- -c "./test_file/github-only/test6.tds" && cargo run -- -e "./test_file/github-only/test6.tdc" --create-answer "python ./test_file/github-only/test6.py"
