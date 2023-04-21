@@ -141,15 +141,16 @@ fn execute(file_name: &str, gen_file_count: &str, output_format: &str, ans_exec_
 
         Ok(res)
     };
+    let mut vm = match VirtualMachine::new(file_name.to_string()) {
+        Ok(r) => { r }
+        Err(e) => { 
+            helper_func::print_msg(&e.get_msg());
+            return 2;
+        }
+    };
 
     for count in 0..gen_file_count {
-        let mut vm = match VirtualMachine::new(file_name.to_string()) {
-            Ok(r) => { r }
-            Err(e) => { 
-                helper_func::print_msg(&e.get_msg());
-                return 2;
-            }
-        };
+        vm.reset();
 
         match vm.exec() {
             Ok(_) => {}

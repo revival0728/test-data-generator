@@ -194,6 +194,7 @@ impl VirtualMachine {
         Ok(())
     }
 
+    pub fn reset(&mut self) { self.buffer_reader.move_reader(0) }
     pub fn exec(&mut self) -> Result<(), RuntimeError> { self.main_thread() }
     pub const fn stdout(&self) -> &String { &self.stdout }
 }

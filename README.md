@@ -51,6 +51,7 @@ tdg -e [Compiled File Path] [-n [Generate File Count:default=1]]
 ### Argument Notice
 - `-c`: `[File Path]` should end with `.tds`
 - `-e`: `[Compiled File Path]` should end with `.tdc`
+- `-n`: if set this argument, you also have to set argument `--filename-format`
 - `--filename-format`: needs to contain `*` in parameter. represents the length of file ID  e.g. "test_\*\*"
 
 
@@ -86,7 +87,7 @@ A `int` `Material` can be define as `[L]..[R]`([L, R])
 
 A `float` `Material ` can be define as `[L]..[R]:.[P].f`([L, R] with precision [P])
 
-If you want to remove the `Material` except for adding it, plus "\\" before the `Material`
+If you want to remove the `Material` except for adding it, add "\\" before the `Material`
 
 ### Macro
 `macro` can be put in `Material`, below is the list of all `macro`
