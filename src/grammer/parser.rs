@@ -91,12 +91,7 @@ impl Parser {
     // code = "( ... ; ... ; ... )"
     fn parse_variable(&mut self, code: &str) -> Result<Variable, CompilerError> {
         // use += to operate location.word_id
-
-        // #[cfg(test)]
-        // {
-        //     println!("In parse_variable(): code = [{}]", code);
-        // }
-
+        
         let mut result: Variable = Variable::new();
         let mut attr_ranges: Vec<(LocType, LocType)> = Vec::new();  // [)
 
@@ -451,8 +446,8 @@ impl Parser {
                     return Err(ce);
                 }
             });
-            if id == var_bracket_pairs.len() - 1 && iter.1 < code.len()-1 {
-                result.push(make_const_variable(&code[iter.1..code.len()-1]))
+            if id == var_bracket_pairs.len() - 1 && iter.1 + 1 < code.len() {
+                result.push(make_const_variable(&code[iter.1 + 1 .. code.len()]))
             }
             if id + 1 < var_bracket_pairs.len() { if iter.1 + 1 < var_bracket_pairs[id + 1].0 {
                 result.push(make_const_variable(
