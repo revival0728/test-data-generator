@@ -45,6 +45,12 @@ jobs:
       run: cargo run -- -c "./test_file/github-only/test5.tds" && cargo run -- -e "./test_file/github-only/test5.tdc"
     - name: Run testfile#6
       run: cargo run -- -c "./test_file/github-only/test6.tds" && cargo run -- -e "./test_file/github-only/test6.tdc" --create-answer "python ./test_file/github-only/test6.py"
+    - name: Run testfile#7
+      run: |
+      cd ./test_file/github-only/
+      mkdir output
+      cargo run -- -c "./test7.tds" && cargo run -- -e "./test7.tdc" -n "10" --output-dir "./output" --filename-format "test7_**"
+      python ./test7-checker.py
 
 
   windows-run-cli-test:
@@ -70,3 +76,9 @@ jobs:
       run: cargo run -- -c "./test_file/github-only/test5.tds" && cargo run -- -e "./test_file/github-only/test5.tdc"
     - name: Run testfile#6
       run: cargo run -- -c "./test_file/github-only/test6.tds" && cargo run -- -e "./test_file/github-only/test6.tdc" --create-answer "python ./test_file/github-only/test6.py"
+    - name: Run testfile#7
+      run: |
+      cd ./test_file/github-only/
+      mkdir output
+      cargo run -- -c "./test7.tds" && cargo run -- -e "./test7.tdc" -n "10" --output-dir "./output" --filename-format "test7_**"
+      python ./test7-checker.py

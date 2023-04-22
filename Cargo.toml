@@ -11,3 +11,7 @@ subprocess = "0.2.9"
 
 [profile.release]
 opt-level = 3
+
+[[bin]]
+name = "tdg"
+path = "src/main.rs"
