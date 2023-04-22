@@ -191,10 +191,14 @@ impl VirtualMachine {
         
         self.cmd_rep()?;
 
+        if self.repeat_stack.len() != 0 {
+            return Err(RuntimeError::new("repeat didn't close when program reach the end"));
+        }
+
         Ok(())
     }
 
-    pub fn reset(&mut self) { self.buffer_reader.move_reader(0) }
+    pub fn reset(&mut self) { self.buffer_reader.move_reader(0); self.stdout.clear(); }
     pub fn exec(&mut self) -> Result<(), RuntimeError> { self.main_thread() }
     pub const fn stdout(&self) -> &String { &self.stdout }
 }

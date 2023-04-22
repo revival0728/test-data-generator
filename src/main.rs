@@ -179,7 +179,7 @@ fn execute(file_name: &str, gen_file_count: &str, output_format: &str, ans_exec_
         // generate datas
         {
             let output_fn = format!("{}.in", fn_template);
-            helper_func::write_file(&output_fn, vm.stdout(), "");
+            helper_func::write_file(&output_fn, vm.stdout(), &output_dir);
         }
 
         if ans_exec_cmd.len() != 0 {
