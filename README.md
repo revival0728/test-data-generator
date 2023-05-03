@@ -51,7 +51,7 @@ tdg -e [Compiled File Path] [-n [Generate File Count:default=1]]
 ### Argument Notice
 - `-c`: `[File Path]` should end with `.tds`
 - `-e`: `[Compiled File Path]` should end with `.tdc`
-- `-n`: if set this argument, you also have to set argument `--filename-format`
+- `-n`: to set this argument, you also have to set argument `--filename-format`
 - `--filename-format`: needs to contain `*` in parameter. represents the length of file ID  e.g. "test_\*\*"
 
 
